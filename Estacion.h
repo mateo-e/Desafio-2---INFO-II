@@ -17,7 +17,6 @@ protected:
     Estacion **anterior;
     Estacion **siguiente;
 
-
 public:
     Estacion(string *nombre, short int *tiempoAnterior,short int *tiempoSiguiente, Estacion *anterior, Estacion *siguiente); // constructor para estacion normal
     Estacion(string *nombre, string *linea, short int *tiempoAnterior, short int *tiempoSiguiente, Estacion *anterior, Estacion *siguiente); // constructor para estacion de transferencia

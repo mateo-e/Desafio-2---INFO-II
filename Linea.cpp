@@ -9,6 +9,7 @@ void Linea::setNombre(string &newNombre)
 {
     delete[] nombre; // se libera la memoria anterior
     nombre = &newNombre;
+
 }
 
 short int Linea::getNum_estaciones() const

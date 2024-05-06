@@ -10,6 +10,7 @@ void Estacion::setNombre(string &newNombre)
 {
     delete[] nombre; // se libera el anterior
     nombre = &newNombre;
+
 }
 
 bool Estacion::getEs_transferencia() const

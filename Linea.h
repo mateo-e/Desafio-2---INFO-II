@@ -14,6 +14,7 @@ private:
     short int num_estaciones;
     Estacion *primeraEstacion;
     Linea *sig_linea;
+
 public:
     Linea(string *nombre_linea);
     ~Linea();

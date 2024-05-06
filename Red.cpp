@@ -29,6 +29,7 @@ void Red::setPrimerLinea(Linea *primer)
 Linea *Red::buscarLinea(string *nombreLinea)
 {
 
+
 }
 
 void Red::eliminarLinea(string *linea)
@@ -42,6 +43,7 @@ void Red::eliminarLinea(string *linea)
 
 void Red::mostrarLineas()
 {
+
 
 }
 
