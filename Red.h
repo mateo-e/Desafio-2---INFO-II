@@ -13,7 +13,7 @@ private:
     Linea *primerLinea;
 
 public:
-    Red(string nombrePrimeraLinea);
+    Red(string *nombrePrimeraLinea);
 
     // getters
     short int getNum_lineas() const;
@@ -22,6 +22,12 @@ public:
     // setters
     void setNum_lineas(int *num);
     void setPrimerLinea(Linea *primer);
+
+    // acciones
+    Linea *buscarLinea(string *linea);
+    void eliminarLinea(string *linea);
+    void mostrarLineas();
+    void agregarLinea();
 
     //destructor
 };
