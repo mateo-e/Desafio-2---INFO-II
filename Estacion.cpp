@@ -13,27 +13,8 @@ void Estacion::setNombre(string &newNombre)
 
 }
 
-bool Estacion::getEs_transferencia() const
-{
-    return es_transferencia;
-}
 
-void Estacion::setEs_transferencia(bool newEs_transferencia)
-{
-    es_transferencia = newEs_transferencia;
-}
-
-short Estacion::getNum_conexiones() const
-{
-    return num_conexiones;
-}
-
-void Estacion::setNum_conexiones(short newNum_conexiones)
-{
-    num_conexiones = newNum_conexiones;
-}
-
-string *Estacion::getLineas_queCruzan() const
+string *Estacion::getLineas_queCruzan()
 {
     return lineas_queCruzan;
 }
@@ -48,9 +29,22 @@ Estacion **Estacion::getAnterior() const
     return anterior;
 }
 
-void Estacion::setAnterior(Estacion *newAnterior)
+void Estacion::setAnterior(Estacion *newAnterior,string *linea)
 {
-    anterior[num_conexiones] = newAnterior;
+    if(num_conexiones == 10) // si se supera la capacidad de los arreglos actuales
+        redimensionar();
+
+    short int pos = 0;
+
+    // se indexa la linea actual(necesario para estaciones de tranferencia)
+    for(short int i = 0; i < num_conexiones; i++)
+    {
+        if(lineas_queCruzan[i] == *linea)
+            break;
+        else
+            pos++;
+    }
+    anterior[pos] = newAnterior;
 }
 
 Estacion **Estacion::getSiguiente() const
@@ -58,9 +52,22 @@ Estacion **Estacion::getSiguiente() const
     return siguiente;
 }
 
-void Estacion::setSiguiente(Estacion *newSiguiente)
+void Estacion::setSiguiente(Estacion *newSiguiente,string *linea)
 {
-    siguiente[0] = newSiguiente;
+    if(num_conexiones == 10) // si se supera la capacidad de los arreglos actuales
+        redimensionar();
+
+    short int pos = 0;
+
+    // se indexa la linea actual(necesario para estaciones de tranferencia)
+    for(short int i = 0; i < num_conexiones; i++)
+    {
+        if(lineas_queCruzan[i] == *linea)
+            break;
+        else
+            pos++;
+    }
+    siguiente[pos] = newSiguiente;
 }
 
 // estacion normal
@@ -69,8 +76,22 @@ short *Estacion::getTiempo_siguiente() const
     return tiempo_siguiente;
 }
 
-void Estacion::setTiempo_siguiente(short *newTiempo_siguiente, short int pos)
+void Estacion::setTiempo_siguiente(short *newTiempo_siguiente, string * linea)
 {
+    if(num_conexiones == 10) // si se supera la capacidad de los arreglos actuales
+        redimensionar();
+
+    short int pos = 0;
+
+    // se indexa la linea actual(necesario para estaciones de tranferencia)
+    for(short int i = 0; i < num_conexiones; i++)
+    {
+        if(lineas_queCruzan[i] == *linea)
+            break;
+        else
+            pos++;
+    }
+
     tiempo_siguiente[pos] = *newTiempo_siguiente;
 }
 
@@ -79,8 +100,21 @@ short *Estacion::getTiempo_anterior() const
     return tiempo_anterior;
 }
 
-void Estacion::setTiempo_anterior(short *newTiempo_anterior,short int pos)
+void Estacion::setTiempo_anterior(short  *newTiempo_anterior,string * linea)
 {
+    if(num_conexiones == 10) // si se supera la capacidad de los arreglos actuales
+        redimensionar();
+
+    short int pos = 0;
+
+    // se indexa la linea actual(necesario para estaciones de tranferencia)
+    for(short int i = 0; i < num_conexiones; i++)
+    {
+        if(lineas_queCruzan[i] == *linea)
+            break;
+        else
+            pos++;
+    }
     tiempo_anterior[pos] = *newTiempo_anterior;
 }
 

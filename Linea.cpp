@@ -9,18 +9,8 @@ void Linea::setNombre(string &newNombre)
 {
     delete[] nombre; // se libera la memoria anterior
     nombre = &newNombre;
-
 }
 
-short int Linea::getNum_estaciones() const
-{
-    return num_estaciones;
-}
-
-void Linea::setNum_estaciones(short newNum_estaciones)
-{
-    num_estaciones = newNum_estaciones;
-}
 
 Linea *Linea::getSig_linea() const
 {
@@ -42,17 +32,36 @@ void Linea::setPrimeraEstacion(Estacion *newPrimeraEstacion)
     primeraEstacion = newPrimeraEstacion;
 }
 
+
+// constructor para cuando es la primera linea de toda la red
 Linea::Linea(string *nombre_linea)
 {
     this->nombre = nombre_linea;
     num_estaciones = 0;
+    num_estacionesTrans = 0;
     sig_linea = NULL;
     agregarEstacion(); // se agrega la primera estacion
 }
 
+Linea::Linea(string *nombre_linea, Estacion *estacionConexion)
+{
+    this->nombre = nombre_linea;
+    num_estaciones = 0;
+    num_estacionesTrans = 0;
+    sig_linea = NULL;
+
+    primeraEstacion = estacionConexion;
+
+    estacionConexion->num_conexiones++; // se aumenta su numero de conexiones
+    if(estacionConexion->num_conexiones % 10 == 0) // si se llega a un tope en el tamaño de las conexiones (este tamaño se aumenta de 10 en 10)
+        estacionConexion->redimensionar();
+
+    estacionConexion->getLineas_queCruzan()[estacionConexion->num_conexiones] = *nombre; // se agrega el nombre de la nueva linea a las lineas que cruzan a la estacion de tranferencia
+}
+
 Linea::~Linea()
 {
-    this->eliminarTodaEstacion(); // se libera la memoria dinamica creada en cada estacion
+    // antes de su invocacion se libera la memoria dinamica creada en cada estacion
 }
 
 void Linea::mostrarEstaciones()
@@ -68,6 +77,21 @@ Estacion *Linea::buscarEstacion(string *nombre)
 short int Linea::posicionarEstacion(string *nombre)
 {
 
+}
+
+void Linea::editar_estacion(Estacion *ant, Estacion *sig, Estacion *nueva, short *tiempo_ant, short *tiempo_sig)
+{
+    if(ant != nullptr)
+    {
+        ant->setSiguiente(nueva,this->getNombre()); // se redireccionan la estacion anterior y siguiente
+        ant->setTiempo_siguiente(tiempo_ant,this->getNombre());
+    }
+
+    if(sig != nullptr) // si es una estacion del borde
+    {
+        sig->setAnterior(nueva,this->getNombre());
+        sig->setTiempo_anterior(tiempo_sig,this->getNombre());
+    }
 }
 
 void Linea::agregarEstacion()
@@ -120,14 +144,15 @@ void Linea::agregarEstacion()
             Estacion *nueva_estacion;
 
             if(aux == 'y') // si es de tranferencia
+            {
                 nueva_estacion = new Estacion(nombre,this->getNombre(),nullptr,tiempo,nullptr,primeraEstacion);
+                num_estacionesTrans ++;
+            }
             else
                 nueva_estacion = new Estacion(nombre,nullptr,tiempo,nullptr,primeraEstacion);
 
 
-
-            buscarEstacion(primeraEstacion->getNombre())->setAnterior(nueva_estacion); // se redirecciona el puntero de la siguiente estacion
-            buscarEstacion(primeraEstacion->getNombre())->setTiempo_anterior(tiempo,0);
+            editar_estacion(nullptr,this->getPrimeraEstacion(),nueva_estacion,nullptr,tiempo);
 
             primeraEstacion = nueva_estacion;
         }
@@ -135,7 +160,10 @@ void Linea::agregarEstacion()
         else
         {
             if(aux == 'y')
+            {
                 primeraEstacion = new Estacion(nombre,this->getNombre(),nullptr,nullptr,nullptr,nullptr);
+                num_estacionesTrans ++;
+            }
             else
                 primeraEstacion = new Estacion (nombre,nullptr,nullptr,nullptr,nullptr); // inicializacion de la primera de todas las estaciones
 
@@ -172,12 +200,15 @@ void Linea::agregarEstacion()
         Estacion *nueva_estacion;
 
         if(aux == 'y') // si es de transferencia
+        {
             nueva_estacion = new Estacion(nombre,this->getNombre(),tiempo,nullptr,ultimaEstacion,nullptr);
+            num_estacionesTrans ++;
+        }
         else
             nueva_estacion = new Estacion(nombre,tiempo,nullptr,ultimaEstacion,nullptr); // la nueva ultima estacion apunta a null en el espacio que corresponde a la siguiente estacion
 
-        ultimaEstacion->setSiguiente(nueva_estacion);
-        ultimaEstacion->setTiempo_siguiente(tiempo,0);
+
+        editar_estacion(ultimaEstacion,nullptr,nueva_estacion,tiempo,nullptr);
 
         cout << "Se ha creado la nueva estacion CORRECTAMENTE";
         num_estaciones++;
@@ -250,17 +281,16 @@ void Linea::agregarEstacion()
 
 
             if(aux == 'y') // en caso de ser de transferencia
+            {
                 nueva_estacion = new Estacion(nombre,this->getNombre(),tiempo_1,tiempo_2,est_1,est_2);
+                num_estacionesTrans ++;
+            }
             else
                 nueva_estacion = new Estacion(nombre,tiempo_1,tiempo_2,est_1,est_2);
 
             // se crea una nueva estacion en donde la estacion anterior es A y la siguiente es B
 
-            est_1->setSiguiente(nueva_estacion); // se redireccionan la estacion anterior y siguiente
-            est_1->setTiempo_siguiente(tiempo_1,0);
-
-            est_2->setAnterior(nueva_estacion);
-            est_2->setTiempo_anterior(tiempo_2,0);
+            editar_estacion(est_1,est_2,nueva_estacion,tiempo_1,tiempo_2);
         }
 
         else // si la segunda estacion ingresada se encuentra antes que la primera
@@ -271,15 +301,15 @@ void Linea::agregarEstacion()
             cin >> aux;
 
             if(aux == 'y') // en caso de ser de transferenciA
+            {
                 nueva_estacion = new Estacion(nombre,this->getNombre(),tiempo_2,tiempo_1,est_2,est_1);
+                num_estacionesTrans ++;
+            }
             else
                 nueva_estacion = new Estacion(nombre,tiempo_2,tiempo_1,est_2,est_1);
 
-            est_2->setSiguiente(nueva_estacion); // se redireccionan la estacion anterior y siguiente
-            est_2->setTiempo_siguiente(tiempo_2,0);
 
-            est_1->setAnterior(nueva_estacion);
-            est_2->setTiempo_anterior(tiempo_1,0);
+            editar_estacion(est_2,est_1,nueva_estacion,tiempo_2,tiempo_1);
         }
 
         num_estaciones++;
@@ -301,11 +331,33 @@ void Linea::eliminarEstacion(string *nombre)
     // se halla la estacion a eliminar
     Estacion *est = buscarEstacion(nombre);
 
+
+    if(est->es_transferencia)
+    {
+        cout << endl << "No se puede eliminar esta estacion de transferencia" << endl;
+        return;
+    }
+    else if(num_estaciones < 2) // si queda una estacion o no hay ninguna
+    {
+        cout << "No se puede eliminar esta estacion";
+        return;
+    }
+
     est->~Estacion();
 }
 
 void Linea::eliminarTodaEstacion()
 {
+    // se comprueba si existe estacion de tranferencia
+    for(int i = 0; i < num_estaciones; i ++)
+    {
+        if((primeraEstacion + i)->es_transferencia)
+        {
+            cout << endl << "Esta linea tiene estacion de transferencia" << endl;
+            return;
+        }
+    }
+
     for(int i = 0; i < num_estaciones; i ++)
         (primeraEstacion + i)->~Estacion();
 }
