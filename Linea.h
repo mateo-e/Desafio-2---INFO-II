@@ -33,7 +33,7 @@ public:
     void editar_estacion(Estacion *ant, Estacion *sig, Estacion *nueva, short int * tiempo_ant, short int * tiempo_sig);
     void agregarEstacion();
     void eliminarEstacion(string *nombre);
-    void eliminarTodaEstacion();
+    bool eliminarTodaEstacion();
 
     // getters y setters
     string *getNombre();

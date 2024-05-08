@@ -7,7 +7,6 @@ string *Linea::getNombre()
 
 void Linea::setNombre(string &newNombre)
 {
-    delete[] nombre; // se libera la memoria anterior
     nombre = &newNombre;
 }
 
@@ -37,7 +36,7 @@ void Linea::setPrimeraEstacion(Estacion *newPrimeraEstacion)
 Linea::Linea(string *nombre_linea)
 {
     this->nombre = nombre_linea;
-    num_estaciones = 0;
+    num_estaciones = 0; // el valo aumenta dentro de 'agregarEstacion'
     num_estacionesTrans = 0;
     sig_linea = NULL;
     agregarEstacion(); // se agrega la primera estacion
@@ -46,17 +45,11 @@ Linea::Linea(string *nombre_linea)
 Linea::Linea(string *nombre_linea, Estacion *estacionConexion)
 {
     this->nombre = nombre_linea;
-    num_estaciones = 0;
-    num_estacionesTrans = 0;
+    num_estaciones = 1;
+    num_estacionesTrans = 1;
     sig_linea = NULL;
 
     primeraEstacion = estacionConexion;
-
-    estacionConexion->num_conexiones++; // se aumenta su numero de conexiones
-    if(estacionConexion->num_conexiones % 10 == 0) // si se llega a un tope en el tamaño de las conexiones (este tamaño se aumenta de 10 en 10)
-        estacionConexion->redimensionar();
-
-    estacionConexion->getLineas_queCruzan()[estacionConexion->num_conexiones] = *nombre; // se agrega el nombre de la nueva linea a las lineas que cruzan a la estacion de tranferencia
 }
 
 Linea::~Linea()
@@ -66,31 +59,101 @@ Linea::~Linea()
 
 void Linea::mostrarEstaciones()
 {
+    Estacion *actual = primeraEstacion; // se inicializa el puntero que direcciona
+
+    for(short int i = 0; i < num_estaciones; i ++)
+    {
+        if(actual->es_transferencia)
+        {
+            cout<< i + 1 << " - " << *(actual->getNombre()) << " - " << *(this->nombre) << endl; // se concatena el nombre de la linea en caso de ser de transferencia
+
+            for(short int u = 0; u < actual->num_conexiones; u++)
+            {
+                if(actual->getLineas_queCruzan(&u) == *(this->nombre)) // se indexa el nombre de la linea actual dentro de las conexiones de la estacion de tranferenia actual
+                {
+                    actual = actual->getSiguiente(&u);
+                    break;
+                }
+            }
+        }
+        else // en caso de no ser de transferencia se imprime normal
+        {
+            cout<< i + 1 << " - " << *(actual->getNombre()) << endl;
+            actual = actual->getSiguiente();
+        }
+    }
 
 }
 
 Estacion *Linea::buscarEstacion(string *nombre)
 {
+    Estacion *actual = primeraEstacion;// se inicializa la estacion actual
 
+    for(short int i = 0; i < num_estaciones; i ++)
+    {
+        if( *(actual->getNombre()) == *nombre)
+            return actual; // en caso de encontrar la estacion con el mismo nombre
+
+        if(actual->es_transferencia)
+        {
+            for(short int u = 0; u < actual->num_conexiones; u++)
+            {
+                if(actual->getLineas_queCruzan(&u) == *(this->nombre)) // se indexa el nombre de la linea actual dentro de las conexiones de la estacion de tranferenia actual
+                {
+                    actual = actual->getSiguiente(&u);
+                    break;
+                }
+            }
+        }
+        else // en caso de no ser de transferencia se imprime normal
+            actual = actual->getSiguiente();
+    }
+
+    return NULL; // en caso de no encontrar la estacion
 }
 
 short int Linea::posicionarEstacion(string *nombre)
 {
+    Estacion *actual = primeraEstacion;
 
+    // en caso que se quiera saber la posicion de la estacion
+    for(short int i = 0; i < num_estaciones; i ++)
+    {
+        if( *(actual->getNombre()) == *nombre)
+            return i; // en caso de encontrar la estacion con el mismo nombre
+
+        if(actual->es_transferencia)
+        {
+            for(short int u = 0; u < actual->num_conexiones; u++)
+            {
+                if(actual->getLineas_queCruzan(&u) == *(this->nombre) && actual) // se indexa el nombre de la linea actual dentro de las conexiones de la estacion de tranferenia actual
+                {
+                    actual = actual->getSiguiente(&u);
+                    break;
+                }
+            }
+        }
+        else
+            actual = actual->getSiguiente();
+
+
+    }
+
+    return -1; // en caso de no encontrar la estacion
 }
 
 void Linea::editar_estacion(Estacion *ant, Estacion *sig, Estacion *nueva, short *tiempo_ant, short *tiempo_sig)
 {
     if(ant != nullptr)
     {
-        ant->setSiguiente(nueva,this->getNombre()); // se redireccionan la estacion anterior y siguiente
-        ant->setTiempo_siguiente(tiempo_ant,this->getNombre());
+        ant->setSiguiente(nueva,this->nombre); // se redireccionan la estacion anterior y siguiente
+        ant->setTiempo_siguiente(tiempo_ant,this->nombre);
     }
 
     if(sig != nullptr) // si es una estacion del borde
     {
-        sig->setAnterior(nueva,this->getNombre());
-        sig->setTiempo_anterior(tiempo_sig,this->getNombre());
+        sig->setAnterior(nueva,this->nombre);
+        sig->setTiempo_anterior(tiempo_sig,this->nombre);
     }
 }
 
@@ -98,16 +161,25 @@ void Linea::agregarEstacion()
 {
     // se imprimen las estaciones de la linea actual,
     int opcion;
-    cout << endl << "Ingrese la ubicacion de la nueva estacion " <<  endl;
     if(num_estaciones > 1) // si existe mas de dos estaciones
     {
+        cout << endl << "Ingrese la ubicacion de la nueva estacion " <<  endl;
+
         cout << "1 - Principio" << endl << "2 - Final" << endl << "3 - Entre estaciones" << endl << "Opcion: ";
         cin >> opcion;
     }
     else if(num_estaciones > 0) // si existe por lo menos una estacion
     {
+        cout << endl << "Ingrese la ubicacion de la nueva estacion " <<  endl;
+
         cout << "1 - Principio" << endl << "2 - Final" << endl << "Opcion: ";
         cin >> opcion;
+
+        if(opcion > 2)
+        {
+            cout << "ingresaste una opcion invalida";
+            return;
+        }
     }
     else // si no existe ninguna estacion se manda directamente a la opcion 1
         opcion = 1;
@@ -119,26 +191,27 @@ void Linea::agregarEstacion()
     case 1:
     {
         string *nombre = new string;
-        short int * tiempo;
 
         if(num_estaciones == 0)
             cout << "Se esta creando la primera estacion" << endl;
 
         do
         {
-            cout << endl << endl<< "Ingrese el nombre de la nueva estacion: ";
+            cout << endl << "Ingrese el nombre de la nueva estacion (debe ser una estacion inexistente): ";
             cin >> *nombre;
         }while(posicionarEstacion(nombre) != -1); // si la estacion ya existia
 
         char aux;
-        cout << endl << "¿La estacion podra ser usada de transferencia en el futuro? (y/n)";
+        cout << endl << "La estacion podra ser usada de transferencia en el futuro? (y/n): ";
         cin >> aux;
 
 
 
         if(num_estaciones > 0)
         {
-            cout << "Ingrese el tiempo de la estacion " << *nombre << " hacia la estacion " << this->getPrimeraEstacion()->getNombre();
+            short int * tiempo = new short int;
+
+            cout << "Ingrese el tiempo de la estacion " << *nombre << " hacia la estacion " << *(this->getPrimeraEstacion()->getNombre()) << ": ";
             cin >> *tiempo;
 
             Estacion *nueva_estacion;
@@ -166,11 +239,11 @@ void Linea::agregarEstacion()
             }
             else
                 primeraEstacion = new Estacion (nombre,nullptr,nullptr,nullptr,nullptr); // inicializacion de la primera de todas las estaciones
-
-            cout << endl <<  "se ha creado la primera estacion" << endl;
         }
         num_estaciones ++;
-        cout << "Se ha creado la nueva estacion CORRECTAMENTE";
+        cout << endl << "Se ha creado la nueva estacion CORRECTAMENTE" << endl;
+
+
 
         break;
 
@@ -179,22 +252,29 @@ void Linea::agregarEstacion()
     case 2:
     {
         string *nombre = new string;
-        short int * tiempo;
+        short int * tiempo = new short int;
 
         do
         {
-            cout << endl << endl<< "Ingrese el nombre de la nueva estacion: ";
+            cout << endl << "Ingrese el nombre de la nueva estacion: ";
             cin >> *nombre;
         }while(posicionarEstacion(nombre) != -1); // si la estacion ya existia
 
         char aux;
-        cout << endl << "¿La estacion podra ser usada de transferencia en el futuro? (y/n)";
+        cout << endl << "La estacion podra ser usada de transferencia en el futuro? (y/n): ";
         cin >> aux;
 
         // se halla la ultima estacion
-        Estacion *ultimaEstacion = primeraEstacion + num_estaciones - 1;
+        Estacion *ultimaEstacion = primeraEstacion;
 
-        cout << "Ingrese el tiempo de la estacion " << *nombre << " hacia la estacion " << *(ultimaEstacion->getNombre());
+        for(short int i = 0; i < num_estaciones; i++)
+        {
+            if(! ultimaEstacion->getSiguiente()) // si ya no se puede seguir avanzando
+                break;
+            ultimaEstacion = ultimaEstacion->getSiguiente();// si todavia faltan estaciones
+        }
+
+        cout << "Ingrese el tiempo de la estacion " << *nombre << " hacia la estacion " << *(ultimaEstacion->getNombre()) << ": ";
         cin >> *tiempo;
 
         Estacion *nueva_estacion;
@@ -233,7 +313,7 @@ void Linea::agregarEstacion()
             pos_1 = posicionarEstacion(&A);
 
             if(pos_1 == -1)
-                cout << endl << "La estacion que ingresaste no se encuentra en la linea "<< this->getNombre() << endl;
+                cout << endl << "La estacion que ingresaste no se encuentra en la linea "<< *(this->getNombre()) << endl;
             else
             {
                 cout << "ingrese el tiempo de la estacion " << A << " hacia la estacion nueva: ";
@@ -245,12 +325,12 @@ void Linea::agregarEstacion()
 
         do
         {
-            cout << endl << "Ingrese una de las estaciones contiguas a " << A;
+            cout << endl << "Ingrese una de las estaciones contiguas a " << A << ": ";
 
             cin >> B;
             pos_2 = posicionarEstacion(&B);
 
-            if(pos_2 == -1 || abs(pos_1 - pos_2 != 1) || pos_1 == pos_2)
+            if(pos_2 == -1 || abs(pos_1 - pos_2 ) != 1 || pos_1 == pos_2)
                 cout << "Ha ocurrido un problema al intentar agregar la estacion." << endl << "Asegurate que la estacion exista y que sea contigua a la primera estacion ingresada." << endl;
             else
             {
@@ -258,7 +338,7 @@ void Linea::agregarEstacion()
                 cin >> *tiempo_2;
             }
 
-        }while(pos_2 == -1 || abs(pos_1 - pos_2 != 1) || pos_1 == pos_2); // se repite cada que no se encuentre la estacion ingresada, que ambas estaciones no esten continuas o que se halla ingresado la misma estacion dos veces
+        }while(pos_2 == -1 || abs(pos_1 - pos_2 ) != 1|| pos_1 == pos_2); // se repite cada que no se encuentre la estacion ingresada, que ambas estaciones no esten continuas o que se halla ingresado la misma estacion dos veces
 
         // se ingresa la informacion de la nueva estacion
 
@@ -275,7 +355,7 @@ void Linea::agregarEstacion()
 
         if(pos_1 < pos_2) // si la primera que se ingreso esta antes en la lista de estaciones
         {
-            cout << endl << "¿La estacion podra ser usada de transferencia en el futuro? (y/n)";
+            cout << endl << "La estacion podra ser usada de transferencia en el futuro? (y/n): ";
             cin >> aux;
 
 
@@ -297,7 +377,7 @@ void Linea::agregarEstacion()
         {
             // se crea una nueva estacion en donde la estacion anterior es B y la siguiente es A
 
-            cout << endl << "¿La estacion podra ser usada de transferencia en el futuro? (y/n)";
+            cout << endl << "La estacion podra ser usada de transferencia en el futuro? (y/n): ";
             cin >> aux;
 
             if(aux == 'y') // en caso de ser de transferenciA
@@ -343,23 +423,53 @@ void Linea::eliminarEstacion(string *nombre)
         return;
     }
 
+    // se redireccionan las estaciones de los bordes
+
+    short int *nuevo_tiempo = new short int(est->getTiempo_anterior() + est->getTiempo_siguiente()); // se suman ambos tiempos
+
+    if(est->getSiguiente()) // si no esta apuntando a nulo en su puntero siguiente
+    {
+        est->getSiguiente()->setAnterior(est->getAnterior(),this->nombre);
+        est->getSiguiente()->setTiempo_anterior(nuevo_tiempo,this->nombre);
+    }
+
+    if(est->getAnterior())
+    {
+        est->getAnterior()->setSiguiente(est->getSiguiente(),this->nombre);
+        est->getAnterior()->setTiempo_siguiente(nuevo_tiempo,this->nombre);
+    }
+
+    // no existe leek of memory ya que si o si se entra a alguno de los anteriores condicionales
+
     est->~Estacion();
 }
 
-void Linea::eliminarTodaEstacion()
+bool Linea::eliminarTodaEstacion()
 {
+    Estacion *actual = primeraEstacion; // se inicializa en la primera estacion
+
     // se comprueba si existe estacion de tranferencia
     for(int i = 0; i < num_estaciones; i ++)
     {
-        if((primeraEstacion + i)->es_transferencia)
+        if(actual->es_transferencia)
         {
-            cout << endl << "Esta linea tiene estacion de transferencia" << endl;
-            return;
+            cout << endl << "Esta linea tiene estacion de transferencia, por lo tanto no se ha podido eliminar" << endl;
+            return false;
         }
+
+        actual = actual->getSiguiente();
     }
 
+    actual = primeraEstacion; // se reinicia una vez se comprueba que no existe estacion de transferencia
+
     for(int i = 0; i < num_estaciones; i ++)
-        (primeraEstacion + i)->~Estacion();
+    {
+        actual->~Estacion();
+        actual = actual->getSiguiente();
+    }
+
+    return true; // en caso de que se eliminara con exito
+
 }
 
 

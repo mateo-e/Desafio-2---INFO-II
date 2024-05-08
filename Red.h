@@ -8,11 +8,13 @@ using namespace std;
 class Red
 {
 private:
-    int num_lineas;
     Linea *primerLinea;
 
 public:
     Red(string *nombrePrimeraLinea);
+
+    // atributo publico
+    int num_lineas;
 
     // getters
     short int getNum_lineas() const;
@@ -22,13 +24,13 @@ public:
     void setNum_lineas(int *num);
     void setPrimerLinea(Linea *primer);
 
-    // acciones
+    // metodos
     Linea *buscarLinea(string *linea);
     void eliminarLinea(string *linea);
     void mostrarLineas();
     void agregarLinea();
+    void calcularTiempos();
 
-    //destructor
 };
 
 #endif // RED_H
