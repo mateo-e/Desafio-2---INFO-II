@@ -36,7 +36,7 @@ void Linea::setPrimeraEstacion(Estacion *newPrimeraEstacion)
 Linea::Linea(string *nombre_linea)
 {
     this->nombre = nombre_linea;
-    num_estaciones = 0; // el valo aumenta dentro de 'agregarEstacion'
+    num_estaciones = 0; // el valor aumenta dentro de 'agregarEstacion'
     num_estacionesTrans = 0;
     sig_linea = NULL;
     agregarEstacion(); // se agrega la primera estacion
@@ -65,7 +65,7 @@ void Linea::mostrarEstaciones()
     {
         if(actual->es_transferencia)
         {
-            cout<< i + 1 << " - " << *(actual->getNombre()) << " - " << *(this->nombre) << endl; // se concatena el nombre de la linea en caso de ser de transferencia
+            cout<< "-> " << *(actual->getNombre()) << " - " << *(this->nombre) << endl; // se concatena el nombre de la linea en caso de ser de transferencia
 
             for(short int u = 0; u < actual->num_conexiones; u++)
             {
@@ -78,7 +78,7 @@ void Linea::mostrarEstaciones()
         }
         else // en caso de no ser de transferencia se imprime normal
         {
-            cout<< i + 1 << " - " << *(actual->getNombre()) << endl;
+            cout<< "-> " << *(actual->getNombre()) << endl;
             actual = actual->getSiguiente();
         }
     }
@@ -144,13 +144,13 @@ short int Linea::posicionarEstacion(string *nombre)
 
 void Linea::editar_estacion(Estacion *ant, Estacion *sig, Estacion *nueva, short *tiempo_ant, short *tiempo_sig)
 {
-    if(ant != nullptr)
+    if(ant != nullptr) // si es una estacion del borde este valor podra ser nulo
     {
         ant->setSiguiente(nueva,this->nombre); // se redireccionan la estacion anterior y siguiente
         ant->setTiempo_siguiente(tiempo_ant,this->nombre);
     }
 
-    if(sig != nullptr) // si es una estacion del borde
+    if(sig != nullptr) // si es una estacion del borde este valor podra ser nulo
     {
         sig->setAnterior(nueva,this->nombre);
         sig->setTiempo_anterior(tiempo_sig,this->nombre);
@@ -417,7 +417,7 @@ void Linea::eliminarEstacion(string *nombre)
         cout << endl << "No se puede eliminar esta estacion de transferencia" << endl;
         return;
     }
-    else if(num_estaciones < 2) // si queda una estacion o no hay ninguna
+    else if(num_estaciones < 2) // si queda una estacion
     {
         cout << "No se puede eliminar esta estacion";
         return;
@@ -439,9 +439,13 @@ void Linea::eliminarEstacion(string *nombre)
         est->getAnterior()->setTiempo_siguiente(nuevo_tiempo,this->nombre);
     }
 
-    // no existe leek of memory ya que si o si se entra a alguno de los anteriores condicionales
+    // NO hay ningun caso en el que existe leak of memory ya que si o si se entra a alguno de los anteriores condicionales
+
+    num_estaciones--;
 
     est->~Estacion();
+
+    cout << endl << "Se ha eliminado la estacion correctamente" << endl;
 }
 
 bool Linea::eliminarTodaEstacion()

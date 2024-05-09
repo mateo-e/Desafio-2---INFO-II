@@ -30,6 +30,9 @@ public:
 
 
     //metodos
+    void redimensionar();
+
+    // getters y setters
     string *getNombre();
     void setNombre(string &newNombre);
     string getLineas_queCruzan(short *pos);
@@ -45,7 +48,6 @@ public:
     void setTiempo_siguiente(short *newTiempo_siguiente,string * linea);
     short getTiempo_anterior(short int *pos);
     short getTiempo_anterior();
-    void redimensionar();
     void setTiempo_anterior(short *newTiempo_anterior,string * linea);
 };
 

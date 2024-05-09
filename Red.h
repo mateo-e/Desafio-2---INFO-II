@@ -16,11 +16,9 @@ public:
     // atributo publico
     int num_lineas;
 
-    // getters
+    // getters y setters
     short int getNum_lineas() const;
     Linea *getPrimerLinea() const;
-
-    // setters
     void setNum_lineas(int *num);
     void setPrimerLinea(Linea *primer);
 

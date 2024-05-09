@@ -50,6 +50,8 @@ void Red::eliminarLinea(string *linea)
         cout << "Se ha eliminado la linea CORRECTAMENTE" << endl ;
     }
 
+    num_lineas --;
+
 
 }
 
@@ -77,6 +79,7 @@ void Red::agregarLinea()
     if(buscarLinea(nueva) != NULL) // si la linea ya existe
     {
         cout << endl << "Esta linea ya existe" << endl;
+        delete nueva;
         return;
     }
 
@@ -84,17 +87,21 @@ void Red::agregarLinea()
 
     mostrarLineas();
 
-    cout << "Ingrese el nombre de la linea con que linea quiere conectar a "<<*nueva<<" (ingrese 'r' para salir): ";
+    cout << "Ingrese el nombre de la linea con que quiere conectar a "<<*nueva<<" (ingrese 'r' para salir): ";
     cin>>aux;
 
     if(aux == "r") //salida
+    {
+        delete nueva;
         return;
+    }
 
     Linea *linea_conexion = buscarLinea(&aux);
 
     if(linea_conexion == NULL) // si la linea ingresada no existe
     {
         cout << endl << "Ingresaste una linea inexistente" << endl;
+        delete nueva;
         return;
     }
 
@@ -102,6 +109,7 @@ void Red::agregarLinea()
     else if(linea_conexion->num_estacionesTrans == 0) // si no tiene ninguna estacion de transferencia
     {
         cout << "Esta linea no tiene ninguna estacion de tranferencia, cree una antes de continuar";
+        delete nueva;
         return;
     }
 
@@ -109,21 +117,26 @@ void Red::agregarLinea()
 
 
     Estacion *actual = linea_conexion->getPrimeraEstacion();
+    cout << endl;
 
     for(int i = 0; i < linea_conexion->num_estaciones; i++) // se muestran las estaciones de tranferencia de la linea de conexion
     {
         if(actual->es_transferencia)
             cout << "-> " << *(actual->getNombre()) << endl;
 
+
         actual = actual->getSiguiente();
-        cout << endl;
+
     }
 
 
-    cout << "Nombre la estacion con la cual quiere conectar a la nueva linea (ingrese 'r' para salir): "; cin>>aux;
+    cout << endl << "Nombre la estacion con la cual quiere conectar a la nueva linea (ingrese 'r' para salir): "; cin>>aux;
 
     if(aux == "r")
+    {
+        delete nueva;
         return;
+    }
 
 
     Estacion * estacionConexion = linea_conexion->buscarEstacion(&aux); // se busca la estacion ingresada
@@ -131,12 +144,14 @@ void Red::agregarLinea()
     if(estacionConexion == NULL)
     {
         cout << endl << "Ingresaste una estacion inexistente" << endl;
+        delete nueva;
         return;
     }
 
     else if(! estacionConexion->es_transferencia) // si se ingresa una estacion que no es de transferencia
     {
         cout << endl << "Ingresaste una estacion que no es de transferencia" << endl;
+        delete nueva;
         return;
     }
 
@@ -184,7 +199,7 @@ void Red::calcularTiempos()
 
         string * est1 = new string, *est2 = new string;
 
-        cout << endl << "Estaciones de la linea"<< *linea << " disponibles: ";
+        cout << endl << "Estaciones de la linea "<< *linea << " disponibles: " << endl;
 
         linea_buscada->mostrarEstaciones();
 
@@ -197,6 +212,9 @@ void Red::calcularTiempos()
         if(inicio == NULL)
         {
             cout << endl << "Ingresaste una estacion inexistente";
+            delete est1;
+            delete est2;
+            delete linea;
             return;
         }
 
@@ -207,6 +225,9 @@ void Red::calcularTiempos()
         if(final == NULL)
         {
             cout << endl << "Ingresaste una estacion inexistente";
+            delete est1;
+            delete est2;
+            delete linea;
             return;
         }
 
@@ -270,6 +291,7 @@ void Red::calcularTiempos()
         delete est2;
 
     }
+
     else
     {
         cout << endl << "Ingresaste una linea inexistente" << endl;
